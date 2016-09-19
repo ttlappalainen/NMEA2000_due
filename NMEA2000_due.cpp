@@ -33,21 +33,17 @@ tNMEA2000_due::tNMEA2000_due() : tNMEA2000() {
 }
 
 //*****************************************************************************
-bool tNMEA2000_due::CANSendFrame(unsigned long id, unsigned char len, const unsigned char *buf, bool wait_sent) {
+bool tNMEA2000_due::CANSendFrame(unsigned long id, unsigned char len, const unsigned char *buf, bool /* wait_sent */) {
   CAN_FRAME output;
   bool result;
-  int TryCount=0;
+//  int TryCount=0;
   
     output.extended=true;
     output.id = id;
     output.length = len;
     for (int i=0; i<len && i<8; i++) output.data.bytes[i]=buf[i];
     
-    do {
-      if (TryCount>0) delay(3);
-      result=CAN.sendFrame(output);
-      TryCount++;
-    } while (TryCount<2 && !result);
+    result=CAN.sendFrame(output);
     
     return result;
 }
