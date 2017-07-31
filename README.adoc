@@ -5,7 +5,7 @@ its internal CAN controller See also NMEA2000 library.
 
 To use this library, you will also need NMEA2000 library and
 due_can library, which you can download from
-https://github.com/collin80/due_can
+https://github.com/ttlappalainen/due_can
 
 == License ==
 

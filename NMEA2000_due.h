@@ -1,7 +1,7 @@
 /* 
 NMEA2000_due.h
 
-Copyright (c) 2015-2016 Timo Lappalainen, Kave Oy, www.kave.fi
+Copyright (c) 2015-2017 Timo Lappalainen, Kave Oy, www.kave.fi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -27,15 +27,22 @@ based setup. See also NMEA2000 library.
 #ifndef _NMEA2000_DUE_H_
 #define _NMEA2000_DUE_H_
 
-#include <NMEA2000.h> 
-#include <N2kMsg.h>
+#include "NMEA2000.h"
+#include "N2kMsg.h"
+#include "due_can.h"  // https://github.com/ttlappalainen/due_can
 
 class tNMEA2000_due : public tNMEA2000
 {
 protected:
+    CANRaw *CANbus;
+    uint8_t NumTxMailBoxes;
+
     bool CANSendFrame(unsigned long id, unsigned char len, const unsigned char *buf, bool wait_sent);
     bool CANOpen();
     bool CANGetFrame(unsigned long &id, unsigned char &len, unsigned char *buf);
+#if defined(DUE_CAN_MAILBOX_TX_BUFFER_SUPPORT)
+    void InitCANFrameBuffers();
+#endif
     
 public:
     tNMEA2000_due();
