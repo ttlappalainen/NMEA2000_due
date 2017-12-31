@@ -9,7 +9,7 @@ https://github.com/ttlappalainen/due_can
 
 == License ==
 
-2015 Copyright (c) Kave Oy, www.kave.fi  All right reserved.
+2015-2017 Copyright (c) Kave Oy, www.kave.fi  All right reserved.
 
 Author: Timo Lappalainen
 
