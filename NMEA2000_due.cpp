@@ -1,7 +1,7 @@
 /* 
 NMEA2000_due.cpp
 
-Copyright (c) 2015-2017 Timo Lappalainen, Kave Oy, www.kave.fi
+Copyright (c) 2015-2021 Timo Lappalainen, Kave Oy, www.kave.fi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -28,13 +28,17 @@ based setup. See also NMEA2000 library.
 
 
 //*****************************************************************************
-tNMEA2000_due::tNMEA2000_due() : tNMEA2000() {
+tNMEA2000_due::tNMEA2000_due(tCANDevice _CANDevice) : tNMEA2000() {
 #if defined(DUE_CAN_MAILBOX_TX_BUFFER_SUPPORT)
   NumTxMailBoxes=2;
 #else
   NumTxMailBoxes=1;
 #endif
   CANbus=&Can0;
+  switch (_CANDevice) {
+    case CANDevice0: CANbus=&Can0; break;
+    case CANDevice1: CANbus=&Can1; break;
+  };
 }
 
 //*****************************************************************************
@@ -49,12 +53,12 @@ bool tNMEA2000_due::CANSendFrame(unsigned long id, unsigned char len, const unsi
     
 #if defined(DUE_CAN_MAILBOX_TX_BUFFER_SUPPORT)
   if ( wait_sent ) {
-    result=Can0.sendFrame(output,Can0.getLastTxBox());
+    result=CANbus->sendFrame(output,CANbus->getLastTxBox());
   } else {
-    result=Can0.sendFrame(output);
+    result=CANbus->sendFrame(output);
   }
 #else
-    result=Can0.sendFrame(output);
+    result=CANbus->sendFrame(output);
 #endif
     
     return result;
@@ -62,16 +66,16 @@ bool tNMEA2000_due::CANSendFrame(unsigned long id, unsigned char len, const unsi
 
 //*****************************************************************************
 bool tNMEA2000_due::CANOpen() {
-    Can0.begin(CAN_BPS_250K);
-    Can0.setNumTXBoxes(NumTxMailBoxes); // Just one send box
+    CANbus->begin(CAN_BPS_250K);
+    CANbus->setNumTXBoxes(NumTxMailBoxes); // Just one send box
     
 #if defined(DUE_CAN_DYNAMIC_BUFFER_SUPPORT)
   if ( MaxCANReceiveFrames==0 ) MaxCANReceiveFrames=32; // Use default, if not set
   if ( MaxCANReceiveFrames<10 ) MaxCANReceiveFrames=10; // Do not allow less that 10 - DUE should have enough memory.
-  Can0.setRxBufferSize(MaxCANReceiveFrames);
+  CANbus->setRxBufferSize(MaxCANReceiveFrames);
 #if !defined(DUE_CAN_MAILBOX_TX_BUFFER_SUPPORT)
   if (MaxCANSendFrames<30 ) MaxCANSendFrames=30;
-  Can0.setTxBufferSize(MaxCANSendFrames-4);
+  CANbus->setTxBufferSize(MaxCANSendFrames-4);
   MaxCANSendFrames=4;
 #endif
 #endif
@@ -80,12 +84,12 @@ bool tNMEA2000_due::CANOpen() {
   //or standard frames
   uint8_t mailbox;
   //extended
-  for (mailbox = 0; mailbox < Can0.getNumRxBoxes()-1; mailbox++) {
-  	Can0.setRXFilter(mailbox, 0, 0, true);
+  for (mailbox = 0; mailbox < CANbus->getNumRxBoxes()-1; mailbox++) {
+  	CANbus->setRXFilter(mailbox, 0, 0, true);
   }  
   //standard
-  for (; mailbox < Can0.getNumRxBoxes(); mailbox++) {
-  	Can0.setRXFilter(mailbox, 0, 0, false);
+  for (; mailbox < CANbus->getNumRxBoxes(); mailbox++) {
+  	CANbus->setRXFilter(mailbox, 0, 0, false);
   }  
     return true;
 }
@@ -95,8 +99,8 @@ bool tNMEA2000_due::CANGetFrame(unsigned long &id, unsigned char &len, unsigned 
   bool HasFrame=false;
   CAN_FRAME incoming;
 
-    if ( Can0.rx_avail() ) {           // check if data coming
-        Can0.read(incoming); 
+    if ( CANbus->rx_avail() ) {           // check if data coming
+        CANbus->read(incoming); 
         id=incoming.id;
         len=incoming.length;
         for (int i=0; i<len && i<8; i++) buf[i]=incoming.data.bytes[i];
@@ -125,9 +129,9 @@ void tNMEA2000_due::InitCANFrameBuffers() {
   uint16_t FastPacketBufferSize= (CANGlobalBufSize * 9 / 10);
   CANGlobalBufSize-=FastPacketBufferSize;
 
-//  Can0.setMailBoxTxBufferSize(CANbus->getFirstTxBox(),HighPriorityBufferSize); // Highest priority buffer
-  Can0.setMailBoxTxBufferSize(Can0.getLastTxBox(),FastPacketBufferSize); // Fastpacket buffer
-  Can0.setTxBufferSize(CANGlobalBufSize);
+//  CANbus->setMailBoxTxBufferSize(CANbus->getFirstTxBox(),HighPriorityBufferSize); // Highest priority buffer
+  CANbus->setMailBoxTxBufferSize(CANbus->getLastTxBox(),FastPacketBufferSize); // Fastpacket buffer
+  CANbus->setTxBufferSize(CANGlobalBufSize);
   
   tNMEA2000::InitCANFrameBuffers(); // call main initialization
 }

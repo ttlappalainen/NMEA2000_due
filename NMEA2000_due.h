@@ -1,7 +1,7 @@
 /* 
 NMEA2000_due.h
 
-Copyright (c) 2015-2017 Timo Lappalainen, Kave Oy, www.kave.fi
+Copyright (c) 2015-2021 Timo Lappalainen, Kave Oy, www.kave.fi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -31,8 +31,7 @@ based setup. See also NMEA2000 library.
 #include "N2kMsg.h"
 #include "due_can.h"  // https://github.com/ttlappalainen/due_can
 
-class tNMEA2000_due : public tNMEA2000
-{
+class tNMEA2000_due : public tNMEA2000 {
 protected:
     CANRaw *CANbus;
     uint8_t NumTxMailBoxes;
@@ -45,7 +44,13 @@ protected:
 #endif
     
 public:
-    tNMEA2000_due();
+  enum tCANDevice {
+    CANDevice0 = 0,
+    CANDevice1 = 1,
+  };
+        
+public:
+    tNMEA2000_due(tCANDevice _CANDevice=CANDevice0);
 };
 
 #endif
